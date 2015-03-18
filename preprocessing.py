@@ -12,7 +12,9 @@
 import sys
 from mw import xml_dump
 from gensim.models import word2vec
+import re
 
+# [^A-Za-z0-9'-\.]
 class PreProcess:
 
     def __init__(self,train_type='wikipedia'):
