@@ -12,6 +12,7 @@
 import sys
 from mw import xml_dump
 from gensim.models import word2vec
+import sys
 
 class PreProcess:
 
@@ -51,7 +52,12 @@ class PreProcess:
 	@input file_name string: The file name for the 
 	           training input
 	"""
-	pass
+	dump = xml_dump.Iterator.from_file(open(file_name))
+
+	for page in dump:
+	    for revision in page:
+                print("{0} {1}".format(revision.id, page_id,revision.text))
+		break
 
     def write_wikipedia():
 	"""
@@ -59,3 +65,8 @@ class PreProcess:
 	"""
 	pass
 
+
+if __name__ == "__main__":
+   pp = PreProcess()
+   train_file = sys.argv[1]
+   pp.read_train(train_file)
