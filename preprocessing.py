@@ -17,12 +17,15 @@ import sys
 import re
 import codecs
 
+from util import process_wiki_str
+
 # [^A-Za-z0-9'-\.]
 class PreProcess:
 
-    def __init__(self,train_type='wikipedia'):
+    def __init__(self,train_type='wikipedia',dir_out=None):
         self.__train_type = train_type
         self.input_train = None
+        self.dir_out = dir_out
 
     def read_train(self,file_name):
         """
@@ -60,14 +63,25 @@ class PreProcess:
         i = 1
         #pages that dont need to be processed
         redirect_page = re.compile('#REDIRECT')
+        if (self.dir_out):
+           fd = open("{0}/wiki_processed.txt".format(self.dir_out),'a')
         for page in dump:
-            print("*******************************")
+            fd_log = open('log.txt', "a")
             for revision in page:
                 if (not(redirect_page.match(revision.text))):
-                    print("{0} ".format( revision.text.encode('UTF-8')))
+                    new_text = process_wiki_str(revision.text)
+                    if (self.dir_out):
+                       fd = codecs.open("{0}/wiki_processed.txt".format(self.dir_out),'a','UTF-8')
+                       fd.write(new_text)
+                       fd.write('\n')
                     print("{0} ".format(page.title))
-
-            if (i==10): break
+                    print(new_text.encode('UTF-8'))
+                    print("{0} ".format(revision.text.encode('UTF-8')))
+                fd_log.write(str(page.id) + '\n')
+            fd_log.close()
+            if (self.dir_out):
+               fd.close()
+            if (i==15): break
             print()
             i = i+1
 
@@ -79,6 +93,7 @@ class PreProcess:
 
 
 if __name__ == "__main__":
+   #pp = PreProcess(dir_out='/scratch2/evelin.amorim/')
    pp = PreProcess()
    train_file = sys.argv[1]
    pp.read_train(train_file)
