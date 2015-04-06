@@ -31,7 +31,7 @@ class myThread(threading.Thread):
 
 class SortParallel:
 
-    def __init__(self, size_bucket=10000):
+    def __init__(self, size_bucket=50000):
         # how many lines the bucket must have
         self.__size_bucket = size_bucket
         # suposto tamanho de uma linha: 120 bytes. Aqui eu aumento
@@ -191,5 +191,5 @@ class SortParallel:
 
 if __name__ == '__main__':
     sp = SortParallel()
-    for x in range(4):
+    for x in range(1):
         sp.parallel_sort(x, '../data/sample_sentences.txt')
