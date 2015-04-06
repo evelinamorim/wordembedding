@@ -18,14 +18,14 @@ class myThread(threading.Thread):
         self.sort_data = []
 
     def run(self):
-        sp = SortParallel()
         data = self.q.get()
         print("**** Thread {0} running ****".format(self.threadID))
         # fd = open("{0}.txt".format(self.threadID), "w")
         # for line in data:
         #    fd.write("{0}\n".format(line))
         # fd.close()
-        sp.mergesort(data, 0, len(data)-1)
+        data.sort()
+        # sp.mergesort(data, 0, len(data)-1)
         self.sort_data = data
 
 
@@ -50,34 +50,47 @@ class SortParallel:
         n2 = e - m
         left = data[b:(b+n1)]
         len_left = len(left)
+
         right = data[m+1:(m+n2+1)]
         len_right = len(right)
 
         i = j = 0
-        nequals = 0
+        output_data = []
         for k in range(b, e+1):
-            if (j >= len_right and i < len_left):
-                data[k] = left[i]
-                i = i+1
-            elif (i >= len_left and j < len_right):
-                data[k] = right[j]
-                j = j+1
-            else:
-                if (i < len_left and j < len_right):
-                    if (left[i] < right[j]):
-                        data[k] = left[i]
-                        i = i+1
+            len_output_data = len(output_data)
+            if (i < len_left and j < len_right):
+                if (left[i] < right[j]):
+                    if (len_output_data != 0):
+                        if (left[i] != output_data[len_output_data-1]):
+                            output_data.append(left[i])
                     else:
-                        if (left[i] == right[j]):
-                            i = i + 1
-                            nequals = nequals + 1
-                        data[k] = right[j]
-                        j = j+1
+                        output_data.append(left[i])
+                    i = i+1
+                else:
+                    if (len(output_data) != 0):
+                        if (right[j] != output_data[len_output_data-1]):
+                            output_data.append(right[j])
+                    else:
+                        output_data.append(right[j])
+                    j = j+1
+            else:
+                if (j < len_right):
+                    if (len(output_data) != 0):
+                        if (right[j] != output_data[len_output_data-1]):
+                            output_data.append(right[j])
+                    else:
+                        output_data.append(right[j])
+                    j = j + 1
+                else:
+                    if (i < len_left):
+                        if (len(output_data) != 0):
+                            if (left[i] != output_data[len_output_data-1]):
+                                output_data.append(left[i])
+                        else:
+                            output_data.append(left[i])
 
-        while (nequals != 0):
-            end = len(data)-1
-            data.pop(end)
-            nequals = nequals - 1
+                    i = i + 1
+        return output_data
 
     def mergesort(self, data, b, e):
         """
@@ -169,7 +182,7 @@ class SortParallel:
             print(">> ", len(t.sort_data))
             result += t.sort_data
             end = len(result) - 1
-            self.merge(result, 0, middle, end)
+            result = self.merge(result, 0, middle, end)
 
         fd = open("wiki_sentences_norep_{0}.txt".format(round_exec), "w")
         for d in result:
