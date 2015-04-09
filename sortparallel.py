@@ -39,6 +39,36 @@ class SortParallel:
         self.__len_line = 180
         self.__max_threads = 3
 
+    def merge_disk(self, file_name1, file_name2, output_file):
+        """
+        Given to files in disk, it performs the merge of the two files
+        in output_file
+
+        @file_name1 string: file name of the first file to merge
+        @file_name2 string: file name of the second file to merge
+        """
+        fd1 = open(file_name1, 'r')
+        fd2 = open(file_name2, 'r')
+
+        while(True):
+            lines_fd1 = []
+            i = 0
+            for l1 in fd1:
+                lines_fd1.append(l1)
+                i = i + 1
+                if (i >= self.__size_bucket):
+                    break
+
+            lines_fd2 = []
+            j = 0
+            for l2 in fd2:
+                lines_fd2.append(l2)
+                j = j + 1
+                if (j >= self.__size_bucket):
+                    break
+        fd1.close()
+        fd2.close()
+
     def merge(self, data, b, m, e):
         """
         merge a data list

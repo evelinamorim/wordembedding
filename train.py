@@ -54,12 +54,12 @@ if __name__ == '__main__':
     cfgObj.read('sample.cfg')
     t = Train(cfgObj)
     model = t.execute('wiki_sentences_norep_0.txt')
-    print(model.similarity('woman', 'man'))
-    print(model.most_similar(positive=['woman', 'king'], negative=['man'],
-                             topn=10))
-    print(model.most_similar_cosmul(positive=['woman', 'king'],
-                                    negative=['man'],
-                                    topn=10))
-    print(model.similarity('england', 'ireland'))
+    # print(model.similarity('woman', 'man'))
+    # print(model.most_similar(positive=['woman', 'king'], negative=['man'],
+    #                         topn=10))
+    # print(model.most_similar_cosmul(positive=['woman', 'king'],
+    #                                negative=['man'],
+    #                                topn=10))
+    # print(model.similarity('england', 'ireland'))
     # print(mode.most_similar_cosmul(
     # print(model.most_similar.__doc__)
