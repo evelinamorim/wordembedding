@@ -31,43 +31,13 @@ class myThread(threading.Thread):
 
 class SortParallel:
 
-    def __init__(self, size_bucket=50000):
+    def __init__(self, size_bucket=1000000):
         # how many lines the bucket must have
         self.__size_bucket = size_bucket
         # suposto tamanho de uma linha: 120 bytes. Aqui eu aumento
         # a quantidade de dados que vai na memoria
         self.__len_line = 180
         self.__max_threads = 3
-
-    def merge_disk(self, file_name1, file_name2, output_file):
-        """
-        Given to files in disk, it performs the merge of the two files
-        in output_file
-
-        @file_name1 string: file name of the first file to merge
-        @file_name2 string: file name of the second file to merge
-        """
-        fd1 = open(file_name1, 'r')
-        fd2 = open(file_name2, 'r')
-
-        while(True):
-            lines_fd1 = []
-            i = 0
-            for l1 in fd1:
-                lines_fd1.append(l1)
-                i = i + 1
-                if (i >= self.__size_bucket):
-                    break
-
-            lines_fd2 = []
-            j = 0
-            for l2 in fd2:
-                lines_fd2.append(l2)
-                j = j + 1
-                if (j >= self.__size_bucket):
-                    break
-        fd1.close()
-        fd2.close()
 
     def merge(self, data, b, m, e):
         """
@@ -170,6 +140,22 @@ class SortParallel:
         else:
             return []
 
+    def remove_repetitions(self, input_file, output_file):
+        """
+        Given a sorted file of sentences
+        """
+        fd_input = open(input_file, "r")
+        fd_output = open(output_file, "w")
+        old_line = fd_input.readline()
+
+        for line in fd_input:
+            if (line != old_line):
+                fd_output.write(line)
+                old_line = line
+
+        fd_input.close()
+        fd_output.close()
+
     def parallel_sort(self, round_exec, file_name):
         """
         Given a file, perform a parallel sorting, using mergesort
@@ -221,5 +207,7 @@ class SortParallel:
 
 if __name__ == '__main__':
     sp = SortParallel()
-    for x in range(1):
-        sp.parallel_sort(x, '../data/sample_sentences.txt')
+    sp.remove_repetitions('/scratch2/evelin.amorim/wiki_sentences_sort.txt',
+                          '/scratch2/evelin.amorim/wiki_sentences_norep.txt')
+    # sp.remove_repetitions('wiki_sentences_norep_0.txt',
+    #                      'saida.txt')

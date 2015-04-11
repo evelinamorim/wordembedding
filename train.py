@@ -53,7 +53,8 @@ if __name__ == '__main__':
     cfgObj = config.Config()
     cfgObj.read('sample.cfg')
     t = Train(cfgObj)
-    model = t.execute('wiki_sentences_norep_0.txt')
+    model = t.execute('/scratch2/evelin.amorim/wiki_sentences_norep.txt')
+    # model = t.execute('wiki_sentences_norep_0.txt')
     # print(model.similarity('woman', 'man'))
     # print(model.most_similar(positive=['woman', 'king'], negative=['man'],
     #                         topn=10))
