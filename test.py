@@ -1,5 +1,6 @@
 import sys
 import gensim
+import time
 
 
 class ReadCorpus:
@@ -45,7 +46,8 @@ class ReadCorpus:
         corpus_lst = []
         for line in fd:
             word_list = line.split()
-            corpus_lst.append((word_list[0], word_list[1], word_list[2]))
+            if (len(word_list) >= 3):
+                corpus_lst.append((word_list[0], word_list[1], word_list[2]))
 
         fd.close()
         return corpus_lst
@@ -57,13 +59,14 @@ class Test:
     Perform test according to a given vector word file
     """
 
-    def __init__(self, task_type):
+    def __init__(self, task_type, dir_out='out'):
         """
         @string task_type: The type of the task that the testing needs to
         perform
         """
 
         self.__task_type = task_type
+        self.__dir_out = dir_out
 
     def execute(self, vector_file, task_file):
         """
@@ -94,8 +97,33 @@ class Test:
             return self.execute_analogy(model, corpus)
 
     def execute_analogy(self, model, corpus):
-        pass
-
+        t = time.gmtime()
+        self.__result_file = "{0}/results{1}{2}{3}_{4}{5}{6}.txt".format(
+                                                              self.__dir_out,
+                                                              t.tm_year,
+                                                              t.tm_mon,
+                                                              t.tm_mday,
+                                                              t.tm_hour,
+                                                              t.tm_min,
+                                                              t.tm_sec)
+        fd = open(self.__result_file, "w")
+        i = 0
+        for el in corpus:
+            a = el[0].lower()
+            a_star = el[1].lower()
+            b = el[2].lower()
+            # TODO: nao sei se pega soh o primeiro mesmo
+            try:
+                top = model.most_similar(positive=[a_star, b],
+                                                negative=[a])[0]
+                fd.write("{0} {1}\n".format(i, top))
+            except KeyError:
+                print("Error: ", a_star, b, a)
+            i = i + 1
+        fd.close()
 
 if __name__ == '__main__':
     vector_file = sys.argv[1]
+    task_file = sys.argv[2]
+    tobj = Test('analogy')
+    tobj.execute(vector_file, task_file)

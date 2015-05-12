@@ -6,6 +6,7 @@ open_tag_expr = re.compile('<[\w]+[\s\w=["]*[\w\-]*["]*]*>')
 open_tag_name_expr = re.compile('<[\w]+[\s\w=\w*["]*]*/>')
 close_tag_expr = re.compile('</[\w]+>')
 
+
 def read_tag_type(tag_str):
      i = 0
      n = len(tag_str)
@@ -63,7 +64,7 @@ def process_title(str_w,pos,n):
     i = pos
     title_str = ''
     while (i<n):
-        
+
         if (i<n-1 and str_w[i]=='=' and str_w[i+1]=='='):
             i = i+1
             break
@@ -90,7 +91,7 @@ def process_tag(str_w,pos,n,open_tag):
                            print("Warning:",tag_type_str.encode('utf-8')," not closed. ")
                       else:
                            break
- 
+
                 i = i + len(close_tag) - 1
                 #se a tag fechou nao preciso do conteudo
                 content_tag = ''
@@ -99,9 +100,9 @@ def process_tag(str_w,pos,n,open_tag):
                 i = process_comment(str_w,i,n)
             elif (open_tag_name_expr.match(close_tag)):
                 #there is types of tags that dont close
-                #because reference to an existing tag 
+                #because reference to an existing tag
                 #the iterator must go up to the end of close tag
-                i = i + len(close_tag) - 1 
+                i = i + len(close_tag) - 1
             else:
                 if (open_tag_expr.match(close_tag)):
                     i = i + len(close_tag)
@@ -147,8 +148,8 @@ def process_wiki_str(str_w):
                   break
              elif ("See also" in title_str):
                   break
-                
-             
+
+
         #removing link to concepts/pages...
         if ( i<n-1  and str_w[i] == '[' and str_w[i+1]=='['):
              link_phrase = ''
@@ -178,13 +179,13 @@ def process_wiki_str(str_w):
                  tag_string = ''
              elif (open_tag_name_expr.match(open_tag)):
                  #there is types of tags that dont close
-                 #because they reference to an existing tag 
+                 #because they reference to an existing tag
                  i = i + len(open_tag) - 1
              elif (open_tag.startswith('<!--')):
                  i = process_comment(str_w,i,n)
              else:
                  new_str_w += tag_string
-            
+
         if (i>=n):
             break
         if ( i<n-1  and str_w[i] == '{'):
@@ -194,7 +195,7 @@ def process_wiki_str(str_w):
              elif ( str_w[i+1]=='|'):
                   #removing tables
                    i = process_table(str_w,i+2,n)
-          
+
         if (i>=n):
             break
         #removing another caracthers
