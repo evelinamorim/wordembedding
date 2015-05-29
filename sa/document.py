@@ -3,6 +3,7 @@ import gensim
 import os
 import numpy as np
 import json
+import math
 
 
 class Document:
@@ -29,7 +30,7 @@ class Document:
                     if t in self.target:
                         self.target[t].append((i, e[t]))
                     else:
-                        self.target[t] = (i, e[t])
+                        self.target[t] = [(i, e[t])]
                 i = i+1
             return data_list
 
@@ -63,14 +64,21 @@ class Document:
         for t in tokenList:
             if t.lower() in model:
                 docWordList.append(model[t.lower()])
-        docWordList = np.array(docWordList)
+        if (len(docWordList) > 0):
+            docWordList = np.array(docWordList)
 
-        if self.testType == 'average':
-            docWord = self.average_vec(docWordList)
-            # simple average or average ber axis?
-            # print(len(docWord))
-        return docWord
+            if self.testType == 'average':
+                docWord = self.average_vec(docWordList)
+                # simple average or average ber axis?
+                # print(len(docWord))
+            elif self.testType == 'linearregression':
+                docWord = self.word2linearregression(docWordList)
+            return docWord
 
     def average_vec(self, vecList):
         # print(len(vecList))
-        return np.mean(vecList, axis=0)
+        m = np.mean(vecList, axis=0)
+
+        return m
+
+    def word2linearregression(self,vecList):
