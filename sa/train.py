@@ -15,10 +15,12 @@ matplotlib.use('Agg')
 
 class Train:
 
-    def __init__(self, textField='', targetFields=[], modelType=None,
-                 docType='json'):
-        self.__doc = Document(textField=textField, targetField=targetFields,
+    def __init__(self, testType='average', textField='', targetFields=[],
+                 modelType=None, docType='json'):
+        self.__doc = Document(testType=testType, textField=textField,
+                              targetField=targetFields,
                               docType=docType)
+        self.__testType = testType
         # a model for each type of target field
         self.__model = {}
         self.__modelType = modelType
@@ -40,14 +42,19 @@ class Train:
             X = []
             for (idoc, y_value) in self.__doc.target[t]:
                 if (docList[idoc] is not None):
-                    X.append(docList[idoc])
-                    # print(docList[idoc])
-                    y.append(y_value)
+                    for e in docList[idoc]:
+                        X.append(e)
+                        # print(docList[idoc])
+                        y.append(y_value)
             print(t, max(y))
+            # print("-->", X[0].shape)
             # treinar com a ordem dos valores construidos
-            X = np.array(X)
+            X = np.asarray(X)
             y = np.array(y)
+            # print(X.shape, y.shape)
             # print(type(X), type(y))
+            # print(X[0][1], y.shape)
+            # print(X[1].shape, y.shape)
             self.__model[t].fit(X, y)
             # self.__model[t] = sm.OLS(y, X)
             # res = self.__model[t].fit()
@@ -59,16 +66,19 @@ class Train:
 
     def write_models(self, dirOut):
         for t in self.__model:
-            fileModel = os.path.join(dirOut, "%s_%s.pkl" % (t,
-                                                            self.__modelType))
+            fileModel = os.path.join(dirOut, "%s_%s_%s.pkl" % (t,
+                                                               self.__testType,
+                                                               self.__modelType)
+                                     )
             joblib.dump(self.__model[t], fileModel)
 
 if __name__ == "__main__":
-    trainObj = Train(textField='reviewComment',
+    trainObj = Train(testType='linearregression',
+                     textField='reviewComment',
                      targetFields=['easeOfUse',
                                    'satisfaction',
                                    'effectiveness'],
-                     modelType='svm')
+                     modelType='LinearRegression')
     trainObj.run('/scratch2/evelin.amorim/WebMD/vectors_webmd_cons.bin',
                  '/scratch2/evelin.amorim/WebMD/train_drugs_reviews.json')
     trainObj.write_models('out/')
