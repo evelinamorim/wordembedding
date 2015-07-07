@@ -18,19 +18,23 @@ import ukr
 
 class Document:
 
-    def __init__(self, testType='average', docType='json',
-                 textField='', targetField=[]):
-        self.testType = testType
+    def __init__(self, docType='average', docExt='json',
+                 textField='', targetField=[], docLen=None):
         self.docType = docType
+        self.docExt = docExt
         # which is text field if a json file is given
         self.textField = textField
         # which target (sentiment aspects to collect) to pick
         self.targetField = targetField
         # for each target field collect its values
         self.target = {}
+        if docLen!=None:
+            self.docLen = int(docLen)
+        else:
+            self.docLen = None
 
     def read_doc(self, fileName):
-        if (self.docType == 'json'):
+        if (self.docExt == 'json'):
             data = json.loads(open(fileName).read())
             data_list = []
             i = 0
@@ -81,50 +85,43 @@ class Document:
                 docWordList.append(model[t.lower()])
         if (len(docWordList) > 0):
             docWordList = np.array(docWordList)
-            if self.testType == 'average':
+            if self.docType == 'average':
                 docWord = self.average_vec(docWordList)
                 # simple average or average ber axis?
                 # print(len(docWord))
-            elif self.testType == 'linearregression':
-                docWord = self.word2linearregression(docWordList)
+            elif self.docType == 'ps':
+                # ps: principal surfaces
+                docWord = self.word2ps(docWordList)
             return docWord
 
     def average_vec(self, vecList):
-        # print(len(vecList))
         m = np.mean(vecList, axis=0)
 
-        # print(m)  # numpy.ndarray
         return m
 
-    def word2linearregression(self, vecList):
+    def word2ps(self, vecList):
         # max_iter = 5000
         max_iter = 100
         q = 2
         kernel = ukr.gaussian
         lko_cv = 1
         metric = 'L2'
+        nrows = len(vecList)
 
-        tm = time.time()
-        u = ukr.UKR(n_components=q, kernel=kernel, n_iter=max_iter,
-                    lko_cv=lko_cv, metric=metric, verbose=False)
-        mani = u.fit_transform(vecList)
-        i = 0
-        # print(u.embeddings[0].embedding_.shape)
-        embeddings = u.embeddings[0].embedding_
-        e_array = []
-        for e in embeddings:
-            # print(e.shape, e_array.shape)
-            # print("-->", e, e_array)
-            e_array.append(e)
-            # print("==>", e_array)
-            # if (i == 2):
-            #    print(">>>", np.asarray(e_array), np.asarray(e_array).shape)
-            #    sys.exit(0)
-            i = i+1
-        e_array = np.asarray(e_array)
-        # print(e_array.shape)
-        # print(mani.shape)  # numpy.ndarray
-        # print(vecList.shape)
-        print('UKR training took %2f seconds' % (time.time() - tm))
-        # return mani
-        return e_array
+        if nrows > self.docLen:
+            tm = time.time()
+            u = ukr.UKR(n_components=q, kernel=kernel, n_iter=max_iter,
+                        lko_cv=lko_cv, metric=metric, verbose=False)
+
+            mani = u.fit_transform(vecList)
+
+            embeddings = u.embeddings[0].embedding_
+            rangeEmbeddings = list(range(self.docLen,nrows))
+            embeddings = np.delete(embeddings,rangeEmbeddings,0)
+
+            # print(np.delete(embeddings,rangeEmbeddings,0).shape)
+
+            print('UKR training took %2f seconds' % (time.time() - tm))
+            return embeddings.reshape((self.docLen*q,))
+        else:
+            return None

@@ -1,1 +1,17 @@
-Sentiment analysis experiments
+The configuration is made through a setting files. The fields you can use are 
+the following:
+
+1) docType: the type of the doc, if it is a principal surface's type (ps) or 
+a average of vectors (average)
+2) textField: which is the field with the comment text, if the train file is a json  
+3) targetFields: the fields used to predict
+4) modelType: the model used to perform the sentiment analysis prediction
+5) vectorModelFile: the file with word2vec vectors
+6) trainTextFile: The file with the text data to train, usually in json format
+7) modelDir: The directory to store the model file of sentiment analysis
+8) docLen: Minimun document size 
+
+Each field can store more than one configuration. Different configurations 
+are spearated by ;. For instance:(NOT IMPLEMENTED)
+
+docType=ps;average

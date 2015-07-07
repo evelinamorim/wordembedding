@@ -1,4 +1,5 @@
 from document import Document
+from config import Config
 from sklearn.linear_model import LinearRegression
 from sklearn import svm
 from sklearn.externals import joblib
@@ -15,12 +16,13 @@ matplotlib.use('Agg')
 
 class Train:
 
-    def __init__(self, testType='average', textField='', targetFields=[],
-                 modelType=None, docType='json'):
-        self.__doc = Document(testType=testType, textField=textField,
+    def __init__(self, docType='average', textField='', targetFields=[],
+                 modelType=None, docExt='json', docLen=None):
+        self.__doc = Document(docType=docType, textField=textField,
                               targetField=targetFields,
-                              docType=docType)
-        self.__testType = testType
+                              docExt=docExt, docLen=docLen)
+        self.__docType = docType
+        self.__docLen = docLen
         # a model for each type of target field
         self.__model = {}
         self.__modelType = modelType
@@ -42,43 +44,48 @@ class Train:
             X = []
             for (idoc, y_value) in self.__doc.target[t]:
                 if (docList[idoc] is not None):
-                    for e in docList[idoc]:
-                        X.append(e)
-                        # print(docList[idoc])
-                        y.append(y_value)
-            print(t, max(y))
-            # print("-->", X[0].shape)
+                    # for e in docList[idoc]:
+                    X.append(docList[idoc])
+                    y.append(y_value)
+            # print(t, max(y))
             # treinar com a ordem dos valores construidos
             X = np.asarray(X)
+            print(X.shape)
             y = np.array(y)
-            # print(X.shape, y.shape)
-            # print(type(X), type(y))
-            # print(X[0][1], y.shape)
-            # print(X[1].shape, y.shape)
             self.__model[t].fit(X, y)
-            # self.__model[t] = sm.OLS(y, X)
-            # res = self.__model[t].fit()
-            # print(res.summary())
-            # plt.hist(res.resid_pearson)
-            # plt.ylabel('Count')
-            # plt.xlabel('Normalized Residuals')
-            # plt.savefig("hist_%s.png" % t)
 
     def write_models(self, dirOut):
         for t in self.__model:
-            fileModel = os.path.join(dirOut, "%s_%s_%s.pkl" % (t,
-                                                               self.__testType,
-                                                               self.__modelType)
-                                     )
+            fileModelName = ''
+            if self.__docLen == None:
+                fileModelName = "%s_%s_%s.pkl" % (t, self.__docType,
+                                                  self.__modelType)
+            else:
+                fileModelName = "%s_%s_%s_%s.pkl" % (t, self.__docType,
+                                                     self.__modelType,
+                                                     self.__docLen)
+
+            fileModel = os.path.join(dirOut,fileModelName)
             joblib.dump(self.__model[t], fileModel)
 
 if __name__ == "__main__":
-    trainObj = Train(testType='linearregression',
-                     textField='reviewComment',
-                     targetFields=['easeOfUse',
-                                   'satisfaction',
-                                   'effectiveness'],
-                     modelType='LinearRegression')
-    trainObj.run('/scratch2/evelin.amorim/WebMD/vectors_webmd_cons.bin',
-                 '/scratch2/evelin.amorim/WebMD/train_drugs_reviews.json')
-    trainObj.write_models('out/')
+    cfgObj = Config()
+
+    cfgObj.read('train.cfg')
+
+    docType=cfgObj.get_field('docType')
+    textField=cfgObj.get_field('textField')
+    targetFields=cfgObj.get_field('targetFields')
+    modelType=cfgObj.get_field('modelType')
+    docLen=cfgObj.get_field('docLen')
+
+    trainObj = Train(docType=docType, textField=textField,
+                     targetFields=targetFields, modelType=modelType,
+                     docLen=docLen)
+
+    vectorModelFile=cfgObj.get_field('vectorModelFile')
+    trainTextFile=cfgObj.get_field('trainTextFile')
+    modelDir=cfgObj.get_field('modelDir')
+
+    trainObj.run(vectorModelFile, trainTextFile)
+    trainObj.write_models(modelDir)
