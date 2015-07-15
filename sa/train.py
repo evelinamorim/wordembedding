@@ -10,17 +10,17 @@ import matplotlib
 
 matplotlib.use('Agg')
 
-# import matplotlib.pyplot as plt
+# import matplotlib
 # 'easeOfUse', 'satisfaction','effectiveness'
 
 
 class Train:
 
     def __init__(self, docType='average', textField='', targetFields=[],
-                 modelType=None, docExt='json', docLen=None):
+                 modelType=None, docExt='json', docLen=None, writeDocs=False):
         self.__doc = Document(docType=docType, textField=textField,
                               targetField=targetFields,
-                              docExt=docExt, docLen=docLen)
+                              docExt=docExt, docLen=docLen, writeDocs=writeDocs)
         self.__docType = docType
         self.__docLen = docLen
         # a model for each type of target field
@@ -51,13 +51,16 @@ class Train:
             # treinar com a ordem dos valores construidos
             X = np.asarray(X)
             print(X.shape)
+            # fd_tmp.write(str(X.shape) + '\n')
             y = np.array(y)
             self.__model[t].fit(X, y)
+
+        # ndocs = len(y)
 
     def write_models(self, dirOut):
         for t in self.__model:
             fileModelName = ''
-            if self.__docLen == None:
+            if self.__docLen is None:
                 fileModelName = "%s_%s_%s.pkl" % (t, self.__docType,
                                                   self.__modelType)
             else:
@@ -65,7 +68,7 @@ class Train:
                                                      self.__modelType,
                                                      self.__docLen)
 
-            fileModel = os.path.join(dirOut,fileModelName)
+            fileModel = os.path.join(dirOut, fileModelName)
             joblib.dump(self.__model[t], fileModel)
 
 if __name__ == "__main__":
@@ -73,19 +76,19 @@ if __name__ == "__main__":
 
     cfgObj.read('train.cfg')
 
-    docType=cfgObj.get_field('docType')
-    textField=cfgObj.get_field('textField')
-    targetFields=cfgObj.get_field('targetFields')
-    modelType=cfgObj.get_field('modelType')
-    docLen=cfgObj.get_field('docLen')
+    docType = cfgObj.get_field('docType')
+    textField = cfgObj.get_field('textField')
+    targetFields = cfgObj.get_field('targetFields')
+    modelType = cfgObj.get_field('modelType')
+    docLen = cfgObj.get_field('docLen')
 
     trainObj = Train(docType=docType, textField=textField,
                      targetFields=targetFields, modelType=modelType,
-                     docLen=docLen)
+                     docLen=docLen, writeDocs=True)
 
-    vectorModelFile=cfgObj.get_field('vectorModelFile')
-    trainTextFile=cfgObj.get_field('trainTextFile')
-    modelDir=cfgObj.get_field('modelDir')
+    vectorModelFile = cfgObj.get_field('vectorModelFile')
+    trainTextFile = cfgObj.get_field('trainTextFile')
+    modelDir = cfgObj.get_field('modelDir')
 
     trainObj.run(vectorModelFile, trainTextFile)
-    trainObj.write_models(modelDir)
+    # trainObj.write_models(modelDir)
